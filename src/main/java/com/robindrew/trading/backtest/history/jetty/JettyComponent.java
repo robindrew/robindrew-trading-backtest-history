@@ -14,6 +14,7 @@ import com.robindrew.common.service.component.jetty.handler.page.IndexPage;
 import com.robindrew.common.service.component.jetty.handler.page.SystemPage;
 import com.robindrew.common.template.ITemplateLocator;
 import com.robindrew.common.template.velocity.VelocityTemplateLocatorSupplier;
+import com.robindrew.trading.backtest.history.jetty.page.PricesPage;
 import com.robindrew.trading.backtest.history.jetty.page.SourcesPage;
 
 public class JettyComponent extends JettyVelocityComponent {
@@ -35,14 +36,13 @@ public class JettyComponent extends JettyVelocityComponent {
 		handler.uri("/BeanOperation", new BeanOperationPage(getContext(), "site/common/BeanOperation.html"));
 
 		// Register extra pages
-		handler.uri("/sources", new SourcesPage(getContext(), "site/history/Sources.html"));
+		handler.uri("/Sources", new SourcesPage(getContext(), "site/backtest/history/Sources.html"));
+		handler.uri("/Prices", new PricesPage(getContext(), "site/backtest/history/Prices.html"));
 	}
 
 	private IHttpExecutor newIndexPage(IVelocityHttpContext context, String templateName) {
 		IndexPage page = new IndexPage(context, templateName);
-		page.addLink("Accounts", "/Accounts", Bootstrap.COLOR_DEFAULT);
-		page.addLink("Positions", "/Positions", Bootstrap.COLOR_DEFAULT);
-		page.addLink("Instruments", "/Instruments", Bootstrap.COLOR_DEFAULT);
+		page.addLink("Sources", "/Sources", Bootstrap.COLOR_DEFAULT);
 		return page;
 	}
 
