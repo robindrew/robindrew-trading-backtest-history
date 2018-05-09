@@ -48,6 +48,7 @@ public class PricesPage extends AbstractServicePage {
 		String type = request.get("type");
 		String provider = request.get("provider");
 		String instrument = request.get("instrument");
+		String instrumentType = request.get("instrumentType");
 
 		String fromDate = request.get("fromDate", null);
 		String fromTime = request.get("fromTime", null);
@@ -73,6 +74,7 @@ public class PricesPage extends AbstractServicePage {
 		dataMap.put("type", type);
 		dataMap.put("provider", provider);
 		dataMap.put("instrument", instrument);
+		dataMap.put("instrumentType", instrumentType);
 		dataMap.put("intervals", INTERVALS);
 
 		dataMap.put("fromDate", DATE_FORMATTER.format(from));

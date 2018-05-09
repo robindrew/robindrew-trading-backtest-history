@@ -7,6 +7,7 @@
 <!-- CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
 
 <style>
 body { padding-top: 10px; }
@@ -48,43 +49,29 @@ body { padding-top: 10px; }
 <!-- TITLE -->
 <div class="col-md-12">
 <h3><span class="glyphicon glyphicon-duplicate"></span> Sources</h3>
+<hr/>
 </div>
 
 <div class="col-md-12">
-<hr/>
-<h4>Price Candle Format <small><span class="label label-danger">PCF</span></small></h3>
-<p>The Price Candle Format provides one minute price candles with tick volume where available. The candles are stored in monthly files.</p>
-<table class="table small table-bordered">
-#foreach($provider in $pcfInstruments.keySet())
+<table id="Source_Table" class="table small table-bordered">
+<thead>
+<tr class="active">
+<th>Format</th>
+<th>Provider</th>
+<th>Type</th>
+<th>Instrument</th>
+</tr>
+</thead>
+<tbody>
+#foreach($source in $sources)
 <tr>
-<th class="danger"><h4>PCF</h4></th>
-<th class="success"><h4>${provider}</h4></th>
-<td class="info">
-#foreach($instrument in $pcfInstruments.get($provider))
-<button class="btn btn-primary btn-xs top-spacer" type="button" onclick="window.location.href='/Prices?type=PCF&provider=${provider}&instrument=${instrument}'">$instrument</button>
-#end
-</td>
+<td class="danger">${source.format}</td>
+<td class="success">${source.provider}</td>
+<td class="warning">${source.instrument.type}</td>
+<td class="info"><a href="/Prices?type=${source.format}&provider=${source.provider}&instrumentType=${source.instrument.type}&instrument=${source.instrument.name}">${source.instrument.name}</a></td>
 </tr>
 #end
-</table>
-</div>
-
-<div class="col-md-12">
-<hr/>
-<h4>Price Tick Format <small><span class="label label-danger">PTF</span></small></h3>
-<p>The Price Tick Format provides individual price ticks. The candles are stored in daily files.</p>
-<table class="table small table-bordered">
-#foreach($provider in $ptfInstruments.keySet())
-<tr>
-<th class="danger"><h4>PTF</h4></th>
-<th class="success"><h4>${provider}</h4></th>
-<td class="info">
-#foreach($instrument in $ptfInstruments.get($provider))
-<button class="btn btn-primary btn-xs top-spacer" type="button" onclick="window.location.href='/Prices?type=PCF&provider=${provider}&instrument=${instrument}'">$instrument</button>
-#end
-</td>
-</tr>
-#end
+</tbody>
 </table>
 </div>
 
@@ -93,5 +80,15 @@ body { padding-top: 10px; }
 <!-- END CONTAINER -->
 </div>
 
+
+<!-- JavaScript -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js" ></script>
+<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#Source_Table').DataTable();
+});
+</script>
 </body>
 </html>
