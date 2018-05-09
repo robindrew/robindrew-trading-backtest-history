@@ -41,7 +41,7 @@ body { padding-top: 10px; }
 </div>
 <ul class="nav navbar-nav">
 <li><a href="/Sources"><span class="glyphicon glyphicon-duplicate"></span> Sources</a></li>
-<li class="active"><a href="/Prices?type=${type}&provider=${provider}&instrumentType=${instrumentType}&instrument=${instrument}"><span class="glyphicon glyphicon-signal"></span> Prices</a></li>
+<li class="active"><a href="/Prices?format=${format}&provider=${provider}&type=${type}&instrument=${instrument}"><span class="glyphicon glyphicon-signal"></span> Prices</a></li>
 </ul>
 <ul class="nav navbar-nav navbar-right">
 </ul>
@@ -58,9 +58,9 @@ body { padding-top: 10px; }
 <h3>
 <span class="glyphicon glyphicon-signal"></span> Prices
 <small>
-<span class="label label-danger">${type}</span>
+<span class="label label-danger">${format}</span>
 <span class="label label-success">${provider}</span>
-<span class="label label-warning">${instrumentType}</span>
+<span class="label label-warning">${type}</span>
 <span class="label label-primary">${instrument}</span>
 </small>
 </h3>
@@ -74,7 +74,7 @@ body { padding-top: 10px; }
 <option #if($interval == $option)selected#end>${option}</option>
 #end
 </select>
-&nbsp;&nbsp;&nbsp;<button id="Show_Prices" class="btn btn-default btn-sm" type="button" onclick="window.location.href='/Prices?type=${type}&provider=${provider}&instrumentType=${instrumentType}&instrument=${instrument}'">SHOW PRICES</button>
+&nbsp;&nbsp;&nbsp;<button id="Show_Prices" class="btn btn-default btn-sm" type="button" onclick="window.location.href='/Prices?format=${format}&provider=${provider}&type=${type}&instrument=${instrument}'">SHOW PRICES</button>
 
 <hr/>
 </div>
@@ -92,7 +92,7 @@ $("#Show_Prices").click(function() {
 	var fromTime = $("#Input_FromTime").val();
 	var interval = $("#Select_Interval").val();
 	console.log(interval);
-	window.location.href = "/Prices?type=${type}&provider=${provider}&instrumentType=${instrumentType}&instrument=${instrument}&fromDate="+fromDate+"&fromTime="+fromTime+"&interval="+interval;
+	window.location.href = "/Prices?format=${format}&provider=${provider}&type=${type}&instrument=${instrument}&fromDate="+fromDate+"&fromTime="+fromTime+"&interval="+interval;
 });
 </script>
 

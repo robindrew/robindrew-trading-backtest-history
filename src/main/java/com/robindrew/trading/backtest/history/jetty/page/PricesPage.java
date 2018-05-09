@@ -1,5 +1,7 @@
 package com.robindrew.trading.backtest.history.jetty.page;
 
+import static com.robindrew.common.dependency.DependencyFactory.getDependency;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -13,6 +15,13 @@ import com.robindrew.common.http.servlet.executor.IVelocityHttpContext;
 import com.robindrew.common.http.servlet.request.IHttpRequest;
 import com.robindrew.common.http.servlet.response.IHttpResponse;
 import com.robindrew.common.service.component.jetty.handler.page.AbstractServicePage;
+import com.robindrew.trading.IInstrument;
+import com.robindrew.trading.InstrumentType;
+import com.robindrew.trading.price.candle.format.PriceFormat;
+import com.robindrew.trading.price.candle.format.pcf.source.IPcfSourceSet;
+import com.robindrew.trading.price.candle.format.pcf.source.file.IPcfFileManager;
+import com.robindrew.trading.price.candle.format.ptf.source.file.IPtfFileManager;
+import com.robindrew.trading.provider.TradeDataProvider;
 
 public class PricesPage extends AbstractServicePage {
 
@@ -45,10 +54,10 @@ public class PricesPage extends AbstractServicePage {
 	protected void execute(IHttpRequest request, IHttpResponse response, Map<String, Object> dataMap) {
 		super.execute(request, response, dataMap);
 
-		String type = request.get("type");
-		String provider = request.get("provider");
+		PriceFormat format = request.getEnum("format", PriceFormat.class);
+		TradeDataProvider provider = request.getEnum("provider", TradeDataProvider.class);
 		String instrument = request.get("instrument");
-		String instrumentType = request.get("instrumentType");
+		InstrumentType type = request.getEnum("type", InstrumentType.class);
 
 		String fromDate = request.get("fromDate", null);
 		String fromTime = request.get("fromTime", null);
@@ -67,14 +76,19 @@ public class PricesPage extends AbstractServicePage {
 		request.setValue("fromTime", fromTime);
 		request.setValue("interval", interval);
 
-		getPrices(type, provider, instrument, fromDate, fromTime, interval);
+		if (format.equals(PriceFormat.PCF)) {
+			getPcfPrices(provider, instrument, fromDate, fromTime, interval);
+		}
+		if (format.equals(PriceFormat.PTF)) {
+			getPtfPrices(provider, instrument, fromDate, fromTime, interval);
+		}
 
 		LocalDateTime from = parseDateTime(fromDate, fromTime);
 
-		dataMap.put("type", type);
+		dataMap.put("format", format);
 		dataMap.put("provider", provider);
 		dataMap.put("instrument", instrument);
-		dataMap.put("instrumentType", instrumentType);
+		dataMap.put("type", type);
 		dataMap.put("intervals", INTERVALS);
 
 		dataMap.put("fromDate", DATE_FORMATTER.format(from));
@@ -83,9 +97,14 @@ public class PricesPage extends AbstractServicePage {
 		dataMap.put("interval", interval);
 	}
 
-	private void getPrices(String type, String provider, String instrument, String fromDate, String fromTime, String interval) {
+	private void getPcfPrices(TradeDataProvider provider, String instrumentName, String fromDate, String fromTime, String interval) {
+		IPcfFileManager pcf = getDependency(IPcfFileManager.class);
+		IInstrument instrument = pcf.getInstrument(provider, instrumentName);
+		IPcfSourceSet sourceSet = pcf.getSourceSet(instrument, provider);
+	}
 
-		// Interval intervalInstance = parseInterval(interval);
+	private void getPtfPrices(TradeDataProvider provider, String instrumentName, String fromDate, String fromTime, String interval) {
+		IPtfFileManager ptf = getDependency(IPtfFileManager.class);
 
 	}
 

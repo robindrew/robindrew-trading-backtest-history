@@ -68,7 +68,7 @@ body { padding-top: 10px; }
 <td class="danger">${source.format}</td>
 <td class="success">${source.provider}</td>
 <td class="warning">${source.instrument.type}</td>
-<td class="info"><a href="/Prices?type=${source.format}&provider=${source.provider}&instrumentType=${source.instrument.type}&instrument=${source.instrument.name}">${source.instrument.name}</a></td>
+<td class="info"><a href="/Prices?format=${source.format}&provider=${source.provider}&type=${source.instrument.type}&instrument=${source.instrument.name}">${source.instrument.name}</a></td>
 </tr>
 #end
 </tbody>
