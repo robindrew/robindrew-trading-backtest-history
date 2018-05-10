@@ -7,6 +7,7 @@
 <!-- CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
 
 <style>
 body { padding-top: 10px; }
@@ -84,9 +85,30 @@ body { padding-top: 10px; }
 <div class="col-md-12">
 <hr/>
 <h4>Candles <small>${candles.size()}</small></h4>
+<table id="Candles_Table" class="table small table-bordered">
+<thead>
+<tr class="active">
+<th>Date</th>
+<th>Open</th>
+<th>High</th>
+<th>Low</th>
+<th>Close</th>
+<th>Volume</th>
+</tr>
+</thead>
+<tbody>
 #foreach($candle in $candles)
-${candle}
+<tr>
+<td>${candle.openDate}</td>
+<td>${candle.midOpen}</td>
+<td>${candle.midHigh}</td>
+<td>${candle.midLow}</td>
+<td>${candle.midClose}</td>
+<td>${candle.tickVolume}</td>
+</tr>
 #end
+</tbody>
+</table>
 </div>
 
 </div>
@@ -94,15 +116,20 @@ ${candle}
 <!-- END CONTAINER -->
 </div>
 
+<!-- JavaScript -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js" ></script>
+<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
 <script>
-$("#Show_Prices").click(function() {
-	var fromDate = $("#Input_FromDate").val();
-	var fromTime = $("#Input_FromTime").val();
-	var interval = $("#Select_Interval").val();
-	console.log(interval);
-	window.location.href = "/Prices?format=${format}&provider=${provider}&type=${type}&instrument=${instrument}&fromDate="+fromDate+"&fromTime="+fromTime+"&interval="+interval;
+$(document).ready(function() {
+    $('#Candles_Table').DataTable();
+    $("#Show_Prices").click(function() {
+		var fromDate = $("#Input_FromDate").val();
+		var fromTime = $("#Input_FromTime").val();
+		var interval = $("#Select_Interval").val();
+		console.log(interval);
+		window.location.href = "/Prices?format=${format}&provider=${provider}&type=${type}&instrument=${instrument}&fromDate="+fromDate+"&fromTime="+fromTime+"&interval="+interval;
+	});
 });
 </script>
 

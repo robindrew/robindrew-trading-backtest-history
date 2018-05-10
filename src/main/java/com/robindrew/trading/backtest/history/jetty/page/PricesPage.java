@@ -21,6 +21,7 @@ import com.robindrew.common.http.servlet.response.IHttpResponse;
 import com.robindrew.common.service.component.jetty.handler.page.AbstractServicePage;
 import com.robindrew.trading.IInstrument;
 import com.robindrew.trading.InstrumentType;
+import com.robindrew.trading.backtest.history.image.IImageCache;
 import com.robindrew.trading.price.candle.IPriceCandle;
 import com.robindrew.trading.price.candle.PriceCandles;
 import com.robindrew.trading.price.candle.charts.PriceCandleCanvas;
@@ -130,6 +131,11 @@ public class PricesPage extends AbstractServicePage {
 		if (!candles.isEmpty()) {
 			PriceCandleCanvas canvas = new PriceCandleCanvas(width, height);
 			canvas.renderCandles(candles, PriceIntervals.MINUTELY);
+			byte[] image = canvas.toPng();
+
+			IImageCache cache = getDependency(IImageCache.class);
+			long imageId = cache.put(image);
+			dataMap.put("imageId", imageId);
 		}
 
 		dataMap.put("rangeFrom", Dates.formatDate("yyyy-MM", firstMonth));
