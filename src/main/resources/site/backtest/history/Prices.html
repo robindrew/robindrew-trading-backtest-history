@@ -75,8 +75,18 @@ body { padding-top: 10px; }
 #end
 </select>
 &nbsp;&nbsp;&nbsp;<button id="Show_Prices" class="btn btn-default btn-sm" type="button" onclick="window.location.href='/Prices?format=${format}&provider=${provider}&type=${type}&instrument=${instrument}'">SHOW PRICES</button>
-
+#if($rangeFrom)
+&nbsp;&nbsp;&nbsp;(Date Range: <b>${rangeFrom}</b> to <b>${rangeTo}</b> )
+#end
 <hr/>
+</div>
+
+<div class="col-md-12">
+<hr/>
+<h4>Candles <small>${candles.size()}</small></h4>
+#foreach($candle in $candles)
+${candle}
+#end
 </div>
 
 </div>

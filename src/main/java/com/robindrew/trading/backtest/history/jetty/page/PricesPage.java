@@ -6,21 +6,33 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
 
+import com.robindrew.common.date.Dates;
 import com.robindrew.common.http.servlet.executor.IVelocityHttpContext;
 import com.robindrew.common.http.servlet.request.IHttpRequest;
 import com.robindrew.common.http.servlet.response.IHttpResponse;
 import com.robindrew.common.service.component.jetty.handler.page.AbstractServicePage;
 import com.robindrew.trading.IInstrument;
 import com.robindrew.trading.InstrumentType;
+import com.robindrew.trading.price.candle.IPriceCandle;
+import com.robindrew.trading.price.candle.PriceCandles;
+import com.robindrew.trading.price.candle.charts.PriceCandleCanvas;
 import com.robindrew.trading.price.candle.format.PriceFormat;
+import com.robindrew.trading.price.candle.format.pcf.source.IPcfSource;
 import com.robindrew.trading.price.candle.format.pcf.source.IPcfSourceSet;
+import com.robindrew.trading.price.candle.format.pcf.source.PcfSourcesStreamSource;
 import com.robindrew.trading.price.candle.format.pcf.source.file.IPcfFileManager;
+import com.robindrew.trading.price.candle.format.ptf.source.IPtfSourceSet;
 import com.robindrew.trading.price.candle.format.ptf.source.file.IPtfFileManager;
+import com.robindrew.trading.price.candle.interval.PriceIntervals;
+import com.robindrew.trading.price.candle.io.stream.source.IPriceCandleStreamSource;
 import com.robindrew.trading.provider.TradeDataProvider;
 
 public class PricesPage extends AbstractServicePage {
@@ -63,6 +75,9 @@ public class PricesPage extends AbstractServicePage {
 		String fromTime = request.get("fromTime", null);
 		String interval = request.get("interval", null);
 
+		int width = request.getInt("width", 900);
+		int height = request.getInt("height", 600);
+
 		if (fromDate == null) {
 			fromDate = request.getValue("fromDate", "2017-01-01");
 		}
@@ -76,14 +91,14 @@ public class PricesPage extends AbstractServicePage {
 		request.setValue("fromTime", fromTime);
 		request.setValue("interval", interval);
 
+		LocalDateTime from = parseDateTime(fromDate, fromTime);
+
 		if (format.equals(PriceFormat.PCF)) {
-			getPcfPrices(provider, instrument, fromDate, fromTime, interval);
+			getPcfPrices(dataMap, provider, instrument, from, interval, width, height);
 		}
 		if (format.equals(PriceFormat.PTF)) {
-			getPtfPrices(provider, instrument, fromDate, fromTime, interval);
+			getPtfPrices(dataMap, provider, instrument, from, interval, width, height);
 		}
-
-		LocalDateTime from = parseDateTime(fromDate, fromTime);
 
 		dataMap.put("format", format);
 		dataMap.put("provider", provider);
@@ -97,14 +112,42 @@ public class PricesPage extends AbstractServicePage {
 		dataMap.put("interval", interval);
 	}
 
-	private void getPcfPrices(TradeDataProvider provider, String instrumentName, String fromDate, String fromTime, String interval) {
+	private void getPcfPrices(Map<String, Object> dataMap, TradeDataProvider provider, String instrumentName, LocalDateTime from, String interval, int width, int height) {
 		IPcfFileManager pcf = getDependency(IPcfFileManager.class);
 		IInstrument instrument = pcf.getInstrument(provider, instrumentName);
 		IPcfSourceSet sourceSet = pcf.getSourceSet(instrument, provider);
+		SortedSet<LocalDate> months = sourceSet.getMonths();
+
+		LocalDate firstMonth = months.first();
+		LocalDate lastMonth = months.last();
+
+		LocalDateTime to = from.plus(1, ChronoUnit.MONTHS);
+
+		Set<? extends IPcfSource> sources = sourceSet.getSources(from, to);
+		IPriceCandleStreamSource source = new PcfSourcesStreamSource(sources);
+
+		List<IPriceCandle> candles = PriceCandles.drainToList(source, 100);
+		if (!candles.isEmpty()) {
+			PriceCandleCanvas canvas = new PriceCandleCanvas(width, height);
+			canvas.renderCandles(candles, PriceIntervals.MINUTELY);
+		}
+
+		dataMap.put("rangeFrom", Dates.formatDate("yyyy-MM", firstMonth));
+		dataMap.put("rangeTo", Dates.formatDate("yyyy-MM", lastMonth));
+		dataMap.put("candles", candles);
 	}
 
-	private void getPtfPrices(TradeDataProvider provider, String instrumentName, String fromDate, String fromTime, String interval) {
+	private void getPtfPrices(Map<String, Object> dataMap, TradeDataProvider provider, String instrumentName, LocalDateTime from, String interval, int width, int height) {
 		IPtfFileManager ptf = getDependency(IPtfFileManager.class);
+		IInstrument instrument = ptf.getInstrument(provider, instrumentName);
+		IPtfSourceSet sourceSet = ptf.getSourceSet(instrument, provider);
+		SortedSet<LocalDate> days = sourceSet.getDays();
+
+		LocalDate firstDay = days.first();
+		LocalDate lastDay = days.last();
+
+		dataMap.put("rangeFrom", Dates.formatDate("yyyy-MM", firstDay));
+		dataMap.put("rangeTo", Dates.formatDate("yyyy-MM", lastDay));
 
 	}
 
