@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import com.robindrew.common.properties.map.type.FileProperty;
 import com.robindrew.common.service.component.AbstractIdleComponent;
+import com.robindrew.trading.backtest.history.image.IImageCache;
+import com.robindrew.trading.backtest.history.image.ImageCache;
 import com.robindrew.trading.price.candle.format.pcf.source.file.IPcfFileManager;
 import com.robindrew.trading.price.candle.format.pcf.source.file.PcfFileManager;
 import com.robindrew.trading.price.candle.format.ptf.source.file.IPtfFileManager;
@@ -38,6 +40,10 @@ public class PricesComponent extends AbstractIdleComponent {
 			log.info("[PTF Provider] {}", provider);
 		}
 		setDependency(IPtfFileManager.class, ptf);
+
+		// Image Cache
+		long imageCapacity = 100;
+		setDependency(IImageCache.class, new ImageCache(imageCapacity));
 	}
 
 	@Override

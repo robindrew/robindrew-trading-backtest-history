@@ -41,6 +41,13 @@ public class PricesPage extends AbstractServicePage {
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
+	private static final int DEFAULT_WIDTH = 1100;
+	private static final int DEFAULT_HEIGHT = 600;
+	private static final String DEFAULT_DATE = "2017-01-01";
+	private static final String DEFAULT_TIME = "00:00";
+	private static final String DEFAULT_INTERVAL = "1 MINUTES";
+	private static final int DEFAULT_CANDLES = 230;
+
 	private static final List<Interval> INTERVALS = new ArrayList<>();
 
 	static {
@@ -76,17 +83,17 @@ public class PricesPage extends AbstractServicePage {
 		String fromTime = request.get("fromTime", null);
 		String interval = request.get("interval", null);
 
-		int width = request.getInt("width", 900);
-		int height = request.getInt("height", 600);
+		int width = request.getInt("width", DEFAULT_WIDTH);
+		int height = request.getInt("height", DEFAULT_HEIGHT);
 
 		if (fromDate == null) {
-			fromDate = request.getValue("fromDate", "2017-01-01");
+			fromDate = request.getValue("fromDate", DEFAULT_DATE);
 		}
 		if (fromTime == null) {
-			fromTime = request.getValue("fromTime", "00:00");
+			fromTime = request.getValue("fromTime", DEFAULT_TIME);
 		}
 		if (interval == null) {
-			interval = request.getValue("interval", "1 MINUTES");
+			interval = request.getValue("interval", DEFAULT_INTERVAL);
 		}
 		request.setValue("fromDate", fromDate);
 		request.setValue("fromTime", fromTime);
@@ -111,6 +118,8 @@ public class PricesPage extends AbstractServicePage {
 		dataMap.put("fromTime", TIME_FORMATTER.format(from));
 
 		dataMap.put("interval", interval);
+		dataMap.put("width", width);
+		dataMap.put("height", height);
 	}
 
 	private void getPcfPrices(Map<String, Object> dataMap, TradeDataProvider provider, String instrumentName, LocalDateTime from, String interval, int width, int height) {
@@ -127,7 +136,7 @@ public class PricesPage extends AbstractServicePage {
 		Set<? extends IPcfSource> sources = sourceSet.getSources(from, to);
 		IPriceCandleStreamSource source = new PcfSourcesStreamSource(sources);
 
-		List<IPriceCandle> candles = PriceCandles.drainToList(source, 100);
+		List<IPriceCandle> candles = PriceCandles.drainToList(source, DEFAULT_CANDLES);
 		if (!candles.isEmpty()) {
 			PriceCandleCanvas canvas = new PriceCandleCanvas(width, height);
 			canvas.renderCandles(candles, PriceIntervals.MINUTELY);
