@@ -75,10 +75,15 @@ body { padding-top: 10px; }
 <option #if($interval == $option)selected#end>${option}</option>
 #end
 </select>
-&nbsp;&nbsp;&nbsp;<button id="Show_Prices" class="btn btn-default btn-sm" type="button" onclick="window.location.href='/Prices?format=${format}&provider=${provider}&type=${type}&instrument=${instrument}'">SHOW PRICES</button>
+&nbsp;&nbsp;&nbsp;
+<button id="ButtonShowPrices" class="btn btn-default btn-sm" type="button" onclick="window.location.href='/Prices?format=${format}&provider=${provider}&type=${type}&instrument=${instrument}'"><span class="glyphicon glyphicon-search"></span> SHOW PRICES</button>
 #if($rangeFrom)
-&nbsp;&nbsp;&nbsp;(Date Range: <b>${rangeFrom}</b> to <b>${rangeTo}</b> )
+&nbsp;&nbsp;&nbsp;
+(Date Range: <b>${rangeFrom}</b> to <b>${rangeTo}</b> )
 #end
+&nbsp;&nbsp;&nbsp;
+<button id="ButtonNext" class="btn btn-default btn-sm" type="button" onclick="window.location.href='/Prices?format=${format}&provider=${provider}&type=${type}&instrument=${instrument}'"><span class="glyphicon glyphicon-menu-left"></span> PREVIOUS</button>
+<button id="ButtonPrevious" class="btn btn-default btn-sm" type="button" onclick="window.location.href='/Prices?format=${format}&provider=${provider}&type=${type}&instrument=${instrument}&fromDate=${toDate}&fromTime=${toTime}'">NEXT <span class="glyphicon glyphicon-menu-right"></span></button>
 <hr/>
 </div>
 
@@ -86,12 +91,56 @@ body { padding-top: 10px; }
 <div class="col-md-12">
 <img src="/Chart?imageId=${imageId}" width="${width}" height="${height}"/>
 </div>
-#end
+
+<div class="col-md-6">
+<table class="table table-bordered small">
+<tr>
+<td>&nbsp;</td>
+<th class="active">Open</th>
+<th class="active">Close</th>
+</tr>
+<tr>
+<th class="active">Date</th>
+<td>${candleFrom.openDate.toLocalDate()}</td>
+<td>${candleTo.closeDate.toLocalDate()}</td>
+</tr>
+<tr>
+<th class="active">Time</th>
+<td>${candleFrom.openDate.toLocalTime()}</td>
+<td>${candleTo.closeDate.toLocalTime()}</td>
+</tr>
+<tr>
+<th class="active">Price</th>
+<td>${candleFrom.midOpen}</td>
+<td>${candleTo.midClose}</td>
+</tr>
+</table>
+</div>
+
+<div class="col-md-6">
+<table class="table table-hover table-bordered small">
+<tr>
+<th class="active" colspan="2">Settings</th>
+</tr>
+<tr>
+<th class="active">Candles</th>
+<td><input type="text" name="candleLimit" value="${candleLimit}"/></td>
+</tr>
+<tr>
+<th class="active">Image Width</th>
+<td><input type="text" name="width" value="${width}"/></td>
+</tr>
+<tr>
+<th class="active">Image Height</th>
+<td><input type="text" name="height" value="${height}"/></td>
+</tr>
+</table>
+</div>
 
 <div class="col-md-12">
 <hr/>
 <h4>Candles <small>${candles.size()}</small></h4>
-<table id="Candles_Table" class="table small table-bordered">
+<table id="TableCandles" class="table small table-hover table-bordered">
 <thead>
 <tr class="active">
 <th>Date</th>
@@ -116,6 +165,7 @@ body { padding-top: 10px; }
 </tbody>
 </table>
 </div>
+#end
 
 </div>
 
@@ -128,8 +178,8 @@ body { padding-top: 10px; }
 <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
 <script>
 $(document).ready(function() {
-    $('#Candles_Table').DataTable();
-    $("#Show_Prices").click(function() {
+    $('#TableCandles').DataTable();
+    $("#ButtonShowPrices").click(function() {
 		var fromDate = $("#Input_FromDate").val();
 		var fromTime = $("#Input_FromTime").val();
 		var interval = $("#Select_Interval").val();

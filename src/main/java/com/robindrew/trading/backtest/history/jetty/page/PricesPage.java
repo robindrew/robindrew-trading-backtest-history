@@ -23,7 +23,6 @@ import com.robindrew.trading.IInstrument;
 import com.robindrew.trading.InstrumentType;
 import com.robindrew.trading.backtest.history.image.IImageCache;
 import com.robindrew.trading.price.candle.IPriceCandle;
-import com.robindrew.trading.price.candle.PriceCandles;
 import com.robindrew.trading.price.candle.charts.PriceCandleCanvas;
 import com.robindrew.trading.price.candle.format.PriceFormat;
 import com.robindrew.trading.price.candle.format.pcf.source.IPcfSource;
@@ -46,7 +45,7 @@ public class PricesPage extends AbstractServicePage {
 	private static final String DEFAULT_DATE = "2017-01-01";
 	private static final String DEFAULT_TIME = "00:00";
 	private static final String DEFAULT_INTERVAL = "1 MINUTES";
-	private static final int DEFAULT_CANDLES = 230;
+	private static final int DEFAULT_CANDLE_LIMIT = 230;
 
 	private static final List<Interval> INTERVALS = new ArrayList<>();
 
@@ -83,6 +82,7 @@ public class PricesPage extends AbstractServicePage {
 		String fromTime = request.get("fromTime", null);
 		String interval = request.get("interval", null);
 
+		int candleLimit = request.getInt("candleLimit", DEFAULT_CANDLE_LIMIT);
 		int width = request.getInt("width", DEFAULT_WIDTH);
 		int height = request.getInt("height", DEFAULT_HEIGHT);
 
@@ -100,12 +100,14 @@ public class PricesPage extends AbstractServicePage {
 		request.setValue("interval", interval);
 
 		LocalDateTime from = parseDateTime(fromDate, fromTime);
+		dataMap.put("fromDate", DATE_FORMATTER.format(from));
+		dataMap.put("fromTime", TIME_FORMATTER.format(from));
 
 		if (format.equals(PriceFormat.PCF)) {
-			getPcfPrices(dataMap, provider, instrument, from, interval, width, height);
+			getPcfPrices(dataMap, provider, instrument, from, interval, width, height, candleLimit);
 		}
 		if (format.equals(PriceFormat.PTF)) {
-			getPtfPrices(dataMap, provider, instrument, from, interval, width, height);
+			getPtfPrices(dataMap, provider, instrument, from, interval, width, height, candleLimit);
 		}
 
 		dataMap.put("format", format);
@@ -114,15 +116,13 @@ public class PricesPage extends AbstractServicePage {
 		dataMap.put("type", type);
 		dataMap.put("intervals", INTERVALS);
 
-		dataMap.put("fromDate", DATE_FORMATTER.format(from));
-		dataMap.put("fromTime", TIME_FORMATTER.format(from));
-
 		dataMap.put("interval", interval);
 		dataMap.put("width", width);
 		dataMap.put("height", height);
+		dataMap.put("candleLimit", candleLimit);
 	}
 
-	private void getPcfPrices(Map<String, Object> dataMap, TradeDataProvider provider, String instrumentName, LocalDateTime from, String interval, int width, int height) {
+	private void getPcfPrices(Map<String, Object> dataMap, TradeDataProvider provider, String instrumentName, LocalDateTime from, String interval, int width, int height, int candleLimit) {
 		IPcfFileManager pcf = getDependency(IPcfFileManager.class);
 		IInstrument instrument = pcf.getInstrument(provider, instrumentName);
 		IPcfSourceSet sourceSet = pcf.getSourceSet(instrument, provider);
@@ -136,7 +136,7 @@ public class PricesPage extends AbstractServicePage {
 		Set<? extends IPcfSource> sources = sourceSet.getSources(from, to);
 		IPriceCandleStreamSource source = new PcfSourcesStreamSource(sources);
 
-		List<IPriceCandle> candles = PriceCandles.drainToList(source, DEFAULT_CANDLES);
+		List<IPriceCandle> candles = drainToList(source, from, candleLimit);
 		if (!candles.isEmpty()) {
 			PriceCandleCanvas canvas = new PriceCandleCanvas(width, height);
 			canvas.renderCandles(candles, PriceIntervals.MINUTELY);
@@ -150,9 +150,37 @@ public class PricesPage extends AbstractServicePage {
 		dataMap.put("rangeFrom", Dates.formatDate("yyyy-MM", firstMonth));
 		dataMap.put("rangeTo", Dates.formatDate("yyyy-MM", lastMonth));
 		dataMap.put("candles", candles);
+
+		if (!candles.isEmpty()) {
+			IPriceCandle first = candles.get(0);
+			IPriceCandle last = candles.get(candles.size() - 1);
+			dataMap.put("candleFrom", first);
+			dataMap.put("candleTo", last);
+			dataMap.put("toDate", DATE_FORMATTER.format(last.getCloseDate()));
+			dataMap.put("toTime", TIME_FORMATTER.format(last.getCloseDate()));
+		}
 	}
 
-	private void getPtfPrices(Map<String, Object> dataMap, TradeDataProvider provider, String instrumentName, LocalDateTime from, String interval, int width, int height) {
+	private List<IPriceCandle> drainToList(IPriceCandleStreamSource source, LocalDateTime from, int candleLimit) {
+
+		List<IPriceCandle> list = new ArrayList<>();
+		while (true) {
+			IPriceCandle candle = source.getNextCandle();
+			if (candle == null) {
+				break;
+			}
+			if (candle.getOpenDate().isBefore(from)) {
+				continue;
+			}
+			list.add(candle);
+			if (list.size() >= candleLimit) {
+				break;
+			}
+		}
+		return list;
+	}
+
+	private LocalDateTime getPtfPrices(Map<String, Object> dataMap, TradeDataProvider provider, String instrumentName, LocalDateTime from, String interval, int width, int height, int candleLimit) {
 		IPtfFileManager ptf = getDependency(IPtfFileManager.class);
 		IInstrument instrument = ptf.getInstrument(provider, instrumentName);
 		IPtfSourceSet sourceSet = ptf.getSourceSet(instrument, provider);
@@ -164,6 +192,7 @@ public class PricesPage extends AbstractServicePage {
 		dataMap.put("rangeFrom", Dates.formatDate("yyyy-MM", firstDay));
 		dataMap.put("rangeTo", Dates.formatDate("yyyy-MM", lastDay));
 
+		return null;
 	}
 
 	private LocalDateTime parseDateTime(String date, String time) {
