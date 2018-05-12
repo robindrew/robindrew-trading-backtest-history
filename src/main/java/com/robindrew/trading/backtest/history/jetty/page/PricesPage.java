@@ -26,14 +26,16 @@ import com.robindrew.trading.price.candle.IPriceCandle;
 import com.robindrew.trading.price.candle.charts.PriceCandleCanvas;
 import com.robindrew.trading.price.candle.format.PriceFormat;
 import com.robindrew.trading.price.candle.format.pcf.source.IPcfSource;
+import com.robindrew.trading.price.candle.format.pcf.source.IPcfSourceProviderManager;
 import com.robindrew.trading.price.candle.format.pcf.source.IPcfSourceSet;
 import com.robindrew.trading.price.candle.format.pcf.source.PcfSourcesStreamSource;
 import com.robindrew.trading.price.candle.format.pcf.source.file.IPcfFileManager;
+import com.robindrew.trading.price.candle.format.ptf.source.IPtfSourceProviderManager;
 import com.robindrew.trading.price.candle.format.ptf.source.IPtfSourceSet;
 import com.robindrew.trading.price.candle.format.ptf.source.file.IPtfFileManager;
 import com.robindrew.trading.price.candle.interval.PriceIntervals;
 import com.robindrew.trading.price.candle.io.stream.source.IPriceCandleStreamSource;
-import com.robindrew.trading.provider.TradeDataProvider;
+import com.robindrew.trading.provider.TradingProvider;
 
 public class PricesPage extends AbstractServicePage {
 
@@ -74,7 +76,7 @@ public class PricesPage extends AbstractServicePage {
 		super.execute(request, response, dataMap);
 
 		PriceFormat format = request.getEnum("format", PriceFormat.class);
-		TradeDataProvider provider = request.getEnum("provider", TradeDataProvider.class);
+		TradingProvider provider = request.getEnum("provider", TradingProvider.class);
 		String instrument = request.get("instrument");
 		InstrumentType type = request.getEnum("type", InstrumentType.class);
 
@@ -122,10 +124,11 @@ public class PricesPage extends AbstractServicePage {
 		dataMap.put("candleLimit", candleLimit);
 	}
 
-	private void getPcfPrices(Map<String, Object> dataMap, TradeDataProvider provider, String instrumentName, LocalDateTime from, String interval, int width, int height, int candleLimit) {
-		IPcfFileManager pcf = getDependency(IPcfFileManager.class);
-		IInstrument instrument = pcf.getInstrument(provider, instrumentName);
-		IPcfSourceSet sourceSet = pcf.getSourceSet(instrument, provider);
+	private void getPcfPrices(Map<String, Object> dataMap, TradingProvider provider, String instrumentName, LocalDateTime from, String interval, int width, int height, int candleLimit) {
+		IPcfFileManager manager = getDependency(IPcfFileManager.class);
+		IPcfSourceProviderManager pcf = manager.getProvider(provider);
+		IInstrument instrument = pcf.getInstrument(instrumentName);
+		IPcfSourceSet sourceSet = pcf.getSourceSet(instrument);
 		SortedSet<LocalDate> months = sourceSet.getMonths();
 
 		LocalDate firstMonth = months.first();
@@ -180,10 +183,11 @@ public class PricesPage extends AbstractServicePage {
 		return list;
 	}
 
-	private LocalDateTime getPtfPrices(Map<String, Object> dataMap, TradeDataProvider provider, String instrumentName, LocalDateTime from, String interval, int width, int height, int candleLimit) {
-		IPtfFileManager ptf = getDependency(IPtfFileManager.class);
-		IInstrument instrument = ptf.getInstrument(provider, instrumentName);
-		IPtfSourceSet sourceSet = ptf.getSourceSet(instrument, provider);
+	private LocalDateTime getPtfPrices(Map<String, Object> dataMap, TradingProvider provider, String instrumentName, LocalDateTime from, String interval, int width, int height, int candleLimit) {
+		IPtfFileManager manager = getDependency(IPtfFileManager.class);
+		IPtfSourceProviderManager ptf = manager.getProvider(provider);
+		IInstrument instrument = ptf.getInstrument(instrumentName);
+		IPtfSourceSet sourceSet = ptf.getSourceSet(instrument);
 		SortedSet<LocalDate> days = sourceSet.getDays();
 
 		LocalDate firstDay = days.first();

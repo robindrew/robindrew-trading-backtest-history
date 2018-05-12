@@ -11,10 +11,12 @@ import com.robindrew.common.http.servlet.request.IHttpRequest;
 import com.robindrew.common.http.servlet.response.IHttpResponse;
 import com.robindrew.common.service.component.jetty.handler.page.AbstractServicePage;
 import com.robindrew.trading.IInstrument;
-import com.robindrew.trading.price.candle.format.PriceFormat;
+import com.robindrew.trading.price.candle.format.IPriceFormat;
+import com.robindrew.trading.price.candle.format.pcf.source.IPcfSourceProviderManager;
 import com.robindrew.trading.price.candle.format.pcf.source.file.IPcfFileManager;
+import com.robindrew.trading.price.candle.format.ptf.source.IPtfSourceProviderManager;
 import com.robindrew.trading.price.candle.format.ptf.source.file.IPtfFileManager;
-import com.robindrew.trading.provider.ITradeDataProvider;
+import com.robindrew.trading.provider.ITradingProvider;
 
 public class SourcesPage extends AbstractServicePage {
 
@@ -30,17 +32,17 @@ public class SourcesPage extends AbstractServicePage {
 
 		// PCF Files
 		IPcfFileManager pcf = getDependency(IPcfFileManager.class);
-		for (ITradeDataProvider provider : pcf.getProviders()) {
-			for (IInstrument instrument : pcf.getInstruments(provider)) {
-				sources.add(new SourceInstrument(PriceFormat.PCF, provider, instrument));
+		for (IPcfSourceProviderManager manager : pcf.getProviders()) {
+			for (IInstrument instrument : manager.getInstruments()) {
+				sources.add(new SourceInstrument(manager.getFormat(), manager.getProvider(), instrument));
 			}
 		}
 
 		// PTF Files
 		IPtfFileManager ptf = getDependency(IPtfFileManager.class);
-		for (ITradeDataProvider provider : ptf.getProviders()) {
-			for (IInstrument instrument : ptf.getInstruments(provider)) {
-				sources.add(new SourceInstrument(PriceFormat.PTF, provider, instrument));
+		for (IPtfSourceProviderManager manager : ptf.getProviders()) {
+			for (IInstrument instrument : manager.getInstruments()) {
+				sources.add(new SourceInstrument(manager.getFormat(), manager.getProvider(), instrument));
 			}
 		}
 
@@ -49,21 +51,21 @@ public class SourcesPage extends AbstractServicePage {
 
 	public static class SourceInstrument {
 
-		private final PriceFormat format;
-		private final ITradeDataProvider provider;
+		private final IPriceFormat format;
+		private final ITradingProvider provider;
 		private final IInstrument instrument;
 
-		public SourceInstrument(PriceFormat format, ITradeDataProvider provider, IInstrument instrument) {
+		public SourceInstrument(IPriceFormat format, ITradingProvider provider, IInstrument instrument) {
 			this.format = format;
 			this.provider = provider;
 			this.instrument = instrument;
 		}
 
-		public PriceFormat getFormat() {
+		public IPriceFormat getFormat() {
 			return format;
 		}
 
-		public ITradeDataProvider getProvider() {
+		public ITradingProvider getProvider() {
 			return provider;
 		}
 

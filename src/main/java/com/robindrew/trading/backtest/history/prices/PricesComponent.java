@@ -9,11 +9,12 @@ import com.robindrew.common.properties.map.type.FileProperty;
 import com.robindrew.common.service.component.AbstractIdleComponent;
 import com.robindrew.trading.backtest.history.image.IImageCache;
 import com.robindrew.trading.backtest.history.image.ImageCache;
+import com.robindrew.trading.price.candle.format.pcf.source.IPcfSourceProviderManager;
 import com.robindrew.trading.price.candle.format.pcf.source.file.IPcfFileManager;
 import com.robindrew.trading.price.candle.format.pcf.source.file.PcfFileManager;
+import com.robindrew.trading.price.candle.format.ptf.source.IPtfSourceProviderManager;
 import com.robindrew.trading.price.candle.format.ptf.source.file.IPtfFileManager;
 import com.robindrew.trading.price.candle.format.ptf.source.file.PtfFileManager;
-import com.robindrew.trading.provider.ITradeDataProvider;
 
 public class PricesComponent extends AbstractIdleComponent {
 
@@ -28,16 +29,16 @@ public class PricesComponent extends AbstractIdleComponent {
 		// PCF Files
 		log.info("[PCF Directory] {}", pcfRootDir.get());
 		IPcfFileManager pcf = new PcfFileManager(pcfRootDir.get());
-		for (ITradeDataProvider provider : pcf.getProviders()) {
-			log.info("[PCF Provider] {}", provider);
+		for (IPcfSourceProviderManager provider : pcf.getProviders()) {
+			log.info("[PCF Provider] {}", provider.getProvider());
 		}
 		setDependency(IPcfFileManager.class, pcf);
 
 		// PTF Files
 		log.info("[PTF Directory] {}", ptfRootDir.get());
 		IPtfFileManager ptf = new PtfFileManager(ptfRootDir.get());
-		for (ITradeDataProvider provider : ptf.getProviders()) {
-			log.info("[PTF Provider] {}", provider);
+		for (IPtfSourceProviderManager provider : ptf.getProviders()) {
+			log.info("[PTF Provider] {}", provider.getProvider());
 		}
 		setDependency(IPtfFileManager.class, ptf);
 
