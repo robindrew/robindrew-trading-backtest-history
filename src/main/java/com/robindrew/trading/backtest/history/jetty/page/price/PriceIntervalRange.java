@@ -97,6 +97,27 @@ public class PriceIntervalRange {
 		return date;
 	}
 
+	public LocalDateTime getDisplayDate() {
+		LocalDateTime date = getDate();
+
+		int move = interval.getDisplayAmount();
+		switch (interval.getUnit()) {
+			case MINUTES:
+				date = date.plusMinutes(move);
+				break;
+			case HOURS:
+				date = date.plusHours(move);
+				break;
+			case DAYS:
+				date = date.plusDays(move);
+				break;
+			default:
+				throw new IllegalArgumentException("interval=" + interval);
+		}
+
+		return date;
+	}
+
 	public LocalDateTime getNextDate() {
 		LocalDateTime date = getDate();
 

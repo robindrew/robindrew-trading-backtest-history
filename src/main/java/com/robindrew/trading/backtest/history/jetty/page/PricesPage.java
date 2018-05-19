@@ -28,6 +28,7 @@ import com.robindrew.trading.backtest.history.jetty.page.price.PriceInterval;
 import com.robindrew.trading.backtest.history.jetty.page.price.PriceIntervalRange;
 import com.robindrew.trading.price.candle.IPriceCandle;
 import com.robindrew.trading.price.candle.charts.PriceCandleCanvas;
+import com.robindrew.trading.price.candle.filter.PriceCandleDateTimeFilter;
 import com.robindrew.trading.price.candle.format.PriceFormat;
 import com.robindrew.trading.price.candle.format.pcf.source.IPcfSource;
 import com.robindrew.trading.price.candle.format.pcf.source.IPcfSourceProviderManager;
@@ -38,6 +39,7 @@ import com.robindrew.trading.price.candle.format.ptf.source.IPtfSourceProviderMa
 import com.robindrew.trading.price.candle.format.ptf.source.IPtfSourceSet;
 import com.robindrew.trading.price.candle.format.ptf.source.file.IPtfFileManager;
 import com.robindrew.trading.price.candle.io.stream.source.IPriceCandleStreamSource;
+import com.robindrew.trading.price.candle.io.stream.source.PriceCandleFilteredStreamSource;
 import com.robindrew.trading.price.candle.io.stream.source.PriceCandleIntervalStreamSource;
 import com.robindrew.trading.provider.TradingProvider;
 
@@ -62,27 +64,17 @@ public class PricesPage extends AbstractServicePage {
 	protected void execute(IHttpRequest request, IHttpResponse response, Map<String, Object> dataMap) {
 		super.execute(request, response, dataMap);
 
-		PriceFormat format = request.getEnum("format", PriceFormat.class);
-		TradingProvider provider = request.getEnum("provider", TradingProvider.class);
-		String instrument = request.get("instrument");
-		InstrumentType type = request.getEnum("type", InstrumentType.class);
+		PriceFormat format = request.getEnum(PriceFormat.class, "format");
+		TradingProvider provider = request.getEnum(TradingProvider.class, "provider");
+		String instrument = request.getString("instrument");
+		InstrumentType type = request.getEnum(InstrumentType.class, "type");
 
-		String fromDate = request.get("fromDate", null);
-		String fromTime = request.get("fromTime", null);
-		String interval = request.get("interval", null);
+		String fromDate = request.getString("fromDate", DEFAULT_DATE);
+		String fromTime = request.getString("fromTime", DEFAULT_TIME);
+		String interval = request.getString("interval", DEFAULT_INTERVAL);
 
-		int width = request.getInt("width", DEFAULT_WIDTH);
-		int height = request.getInt("height", DEFAULT_HEIGHT);
-
-		if (fromDate == null) {
-			fromDate = request.getValue("fromDate", DEFAULT_DATE);
-		}
-		if (fromTime == null) {
-			fromTime = request.getValue("fromTime", DEFAULT_TIME);
-		}
-		if (interval == null) {
-			interval = request.getValue("interval", DEFAULT_INTERVAL);
-		}
+		int width = request.getInteger("width", DEFAULT_WIDTH);
+		int height = request.getInteger("height", DEFAULT_HEIGHT);
 
 		boolean next = request.getBoolean("next", false);
 		boolean previous = request.getBoolean("previous", false);
@@ -111,9 +103,9 @@ public class PricesPage extends AbstractServicePage {
 		fromDate = DATE_FORMATTER.format(range.getDate());
 		fromTime = TIME_FORMATTER.format(range.getDate());
 
-		request.setValue("fromDate", fromDate);
-		request.setValue("fromTime", fromTime);
-		request.setValue("interval", interval);
+		request.set("fromDate", fromDate);
+		request.set("fromTime", fromTime);
+		request.set("interval", interval);
 
 		dataMap.put("format", format);
 		dataMap.put("provider", provider);
@@ -140,12 +132,13 @@ public class PricesPage extends AbstractServicePage {
 
 		PriceInterval interval = range.getInterval();
 		LocalDateTime from = range.getDate();
-		LocalDateTime to = range.getNextDate();
+		LocalDateTime to = range.getDisplayDate();
 
 		Set<? extends IPcfSource> sources = sourceSet.getSources(from, to);
 		IPriceCandleStreamSource source = new PcfSourcesStreamSource(sources);
 
 		source = new PriceCandleIntervalStreamSource(source, interval.asPriceInterval());
+		source = new PriceCandleFilteredStreamSource(source, new PriceCandleDateTimeFilter(from, to));
 
 		List<IPriceCandle> candles = drainToList(source, from, interval.getDisplayAmount());
 
