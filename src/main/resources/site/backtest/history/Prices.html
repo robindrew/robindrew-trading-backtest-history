@@ -82,8 +82,8 @@ body { padding-top: 10px; }
 (Date Range: <b>${rangeFrom}</b> to <b>${rangeTo}</b> )
 #end
 &nbsp;&nbsp;&nbsp;
-<button id="ButtonNext" class="btn btn-default btn-sm" type="button" onclick="window.location.href='/Prices?format=${format}&provider=${provider}&type=${type}&instrument=${instrument}'"><span class="glyphicon glyphicon-menu-left"></span> PREVIOUS</button>
-<button id="ButtonPrevious" class="btn btn-default btn-sm" type="button" onclick="window.location.href='/Prices?format=${format}&provider=${provider}&type=${type}&instrument=${instrument}&fromDate=${toDate}&fromTime=${toTime}'">NEXT <span class="glyphicon glyphicon-menu-right"></span></button>
+<button id="ButtonNext"     class="btn btn-default btn-sm" type="button" onclick="window.location.href='/Prices?format=${format}&provider=${provider}&type=${type}&instrument=${instrument}&fromDate=${fromDate}&fromTime=${fromTime}&previous=true'"><span class="glyphicon glyphicon-menu-left"></span> PREVIOUS</button>
+<button id="ButtonPrevious" class="btn btn-default btn-sm" type="button" onclick="window.location.href='/Prices?format=${format}&provider=${provider}&type=${type}&instrument=${instrument}&fromDate=${fromDate}&fromTime=${fromTime}&next=true'">NEXT <span class="glyphicon glyphicon-menu-right"></span></button>
 <hr/>
 </div>
 
@@ -123,9 +123,6 @@ body { padding-top: 10px; }
 <th class="active" colspan="2">Settings</th>
 </tr>
 <tr>
-<th class="active">Candles</th>
-<td><input type="text" name="candleLimit" value="${candleLimit}"/></td>
-</tr>
 <tr>
 <th class="active">Image Width</th>
 <td><input type="text" name="width" value="${width}"/></td>
