@@ -34,7 +34,7 @@ import com.robindrew.trading.price.candle.format.pcf.source.IPcfSource;
 import com.robindrew.trading.price.candle.format.pcf.source.IPcfSourceProviderManager;
 import com.robindrew.trading.price.candle.format.pcf.source.IPcfSourceSet;
 import com.robindrew.trading.price.candle.format.pcf.source.PcfSourcesStreamSource;
-import com.robindrew.trading.price.candle.format.pcf.source.file.IPcfFileManager;
+import com.robindrew.trading.price.candle.format.pcf.source.file.IPcfFileProviderLocator;
 import com.robindrew.trading.price.candle.format.ptf.source.IPtfSourceProviderManager;
 import com.robindrew.trading.price.candle.format.ptf.source.IPtfSourceSet;
 import com.robindrew.trading.price.candle.format.ptf.source.file.IPtfFileManager;
@@ -121,7 +121,7 @@ public class PricesPage extends AbstractServicePage {
 	}
 
 	private void getPcfPrices(Map<String, Object> dataMap, TradingProvider provider, String instrumentName, PriceIntervalRange range, int width, int height) {
-		IPcfFileManager manager = getDependency(IPcfFileManager.class);
+		IPcfFileProviderLocator manager = getDependency(IPcfFileProviderLocator.class);
 		IPcfSourceProviderManager pcf = manager.getProvider(provider);
 		IInstrument instrument = pcf.getInstrument(instrumentName);
 		IPcfSourceSet sourceSet = pcf.getSourceSet(instrument);

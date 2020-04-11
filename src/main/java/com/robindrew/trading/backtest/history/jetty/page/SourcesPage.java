@@ -13,7 +13,7 @@ import com.robindrew.common.service.component.jetty.handler.page.AbstractService
 import com.robindrew.trading.IInstrument;
 import com.robindrew.trading.price.candle.format.IPriceFormat;
 import com.robindrew.trading.price.candle.format.pcf.source.IPcfSourceProviderManager;
-import com.robindrew.trading.price.candle.format.pcf.source.file.IPcfFileManager;
+import com.robindrew.trading.price.candle.format.pcf.source.file.IPcfFileProviderLocator;
 import com.robindrew.trading.price.candle.format.ptf.source.IPtfSourceProviderManager;
 import com.robindrew.trading.price.candle.format.ptf.source.file.IPtfFileManager;
 import com.robindrew.trading.provider.ITradingProvider;
@@ -31,7 +31,7 @@ public class SourcesPage extends AbstractServicePage {
 		List<SourceInstrument> sources = new ArrayList<>();
 
 		// PCF Files
-		IPcfFileManager pcf = getDependency(IPcfFileManager.class);
+		IPcfFileProviderLocator pcf = getDependency(IPcfFileProviderLocator.class);
 		for (IPcfSourceProviderManager manager : pcf.getProviders()) {
 			for (IInstrument instrument : manager.getInstruments()) {
 				sources.add(new SourceInstrument(manager.getFormat(), manager.getProvider(), instrument));
